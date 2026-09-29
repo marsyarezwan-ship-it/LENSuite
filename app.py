@@ -44,6 +44,10 @@ from modules.lexical_engine import (
 
 )
 
+from modules.cefr_lexical_engine import (
+    analyse_text_cefr,
+    build_teacher_lexical_summary
+)
 
 
 # ============================================================
@@ -94,7 +98,7 @@ if "page" not in st.session_state:
 
 
 
-    st.session_state.page = "home"
+    st.session_state.page = "welcome"
 
 
 # VISUAL SYSTEM
@@ -203,6 +207,114 @@ div[data-testid="stVerticalBlockBorderWrapper"] h6{
     margin:.7rem 0 1.2rem;
 }
 
+
+/* LENSFix Full Review Summary — dedicated readable colours */
+.lensfix-summary-card{
+    background:#FFFFFF !important;
+    border:1px solid #E2E8F0 !important;
+    border-radius:16px !important;
+    padding:20px 24px !important;
+    margin:10px 0 14px 0 !important;
+    box-shadow:0 8px 22px rgba(15,23,42,.04) !important;
+}
+.lensfix-summary-card,
+.lensfix-summary-card *,
+.lensfix-summary-list,
+.lensfix-summary-list *,
+.lensfix-summary-item{
+    color:#475569 !important;
+    -webkit-text-fill-color:#475569 !important;
+    opacity:1 !important;
+}
+.lensfix-summary-list{
+    margin:0 !important;
+    padding-left:1.25rem !important;
+    line-height:1.75 !important;
+}
+.lensfix-summary-item{
+    margin-bottom:10px !important;
+}
+.lensfix-summary-item:last-child{
+    margin-bottom:0 !important;
+}
+.lensfix-summary-strong{
+    color:#172033 !important;
+    -webkit-text-fill-color:#172033 !important;
+    font-weight:800 !important;
+}
+
+/* LENSFix summary meaning colours */
+.lensfix-summary-item.summary-review,
+.lensfix-summary-item.summary-review *{
+    color:#B91C1C !important;
+    -webkit-text-fill-color:#B91C1C !important;
+}
+.lensfix-summary-item.summary-fulfilled,
+.lensfix-summary-item.summary-fulfilled *{
+    color:#15803D !important;
+    -webkit-text-fill-color:#15803D !important;
+}
+.lensfix-summary-item.summary-unspecified,
+.lensfix-summary-item.summary-unspecified *{
+    color:#C2410C !important;
+    -webkit-text-fill-color:#C2410C !important;
+}
+
+
+/* LENSFix teacher-approved revision preview */
+.lensfix-revision-preview{
+    background:#FFFFFF !important;
+    border:1px solid #E2E8F0 !important;
+    border-radius:14px !important;
+    padding:18px 20px !important;
+    margin:6px 0 4px 0 !important;
+    color:#334155 !important;
+    -webkit-text-fill-color:#334155 !important;
+}
+.lensfix-revision-preview *,
+.lensfix-revision-item{
+    color:#334155 !important;
+    -webkit-text-fill-color:#334155 !important;
+    opacity:1 !important;
+}
+.lensfix-revision-title{
+    color:#172033 !important;
+    -webkit-text-fill-color:#172033 !important;
+    font-weight:800 !important;
+    margin-bottom:12px !important;
+}
+.lensfix-revision-item{
+    margin:8px 0 !important;
+    line-height:1.55 !important;
+}
+.lensfix-revision-preserve{
+    margin-top:14px !important;
+    padding-top:12px !important;
+    border-top:1px solid #E2E8F0 !important;
+    color:#64748B !important;
+    -webkit-text-fill-color:#64748B !important;
+    font-size:.95rem !important;
+}
+
+
+/* ============================================================
+   GLOBAL LENSUITE BACKGROUND
+   Same soft lavender-blue atmosphere across every page
+   ============================================================ */
+html, body, [data-testid="stAppViewContainer"], .stApp {
+    background:
+        radial-gradient(circle at 8% 8%, rgba(196,181,253,.30) 0%, rgba(196,181,253,0) 27%),
+        radial-gradient(circle at 92% 10%, rgba(191,219,254,.34) 0%, rgba(191,219,254,0) 30%),
+        linear-gradient(135deg, #FBFAFF 0%, #F7F7FF 48%, #F3F7FF 100%) !important;
+    background-attachment: fixed !important;
+}
+[data-testid="stHeader"] {
+    background: transparent !important;
+}
+[data-testid="stMainBlockContainer"] {
+    background: transparent !important;
+}
+
 </style>""",unsafe_allow_html=True)
 
 def render_brand():
@@ -231,6 +343,91 @@ def render_workflow(active_page):
 
 
 
+def welcome_page():
+    render_brand()
+
+    st.markdown('<style>\n    .welcome-hero{\n        position:relative;\n        overflow:hidden;\n        padding:54px 48px 46px 48px;\n        border-radius:30px;\n        background:\n          radial-gradient(circle at 88% 18%, rgba(255,255,255,.55), transparent 22%),\n          radial-gradient(circle at 12% 90%, rgba(196,181,253,.45), transparent 26%),\n          linear-gradient(135deg,#F8F7FF 0%,#EEE9FF 48%,#E9E7FF 100%);\n        border:1px solid rgba(124,58,237,.16);\n        box-shadow:0 24px 60px rgba(79,70,229,.12);\n        margin:10px 0 28px 0;\n    }\n    .welcome-kicker{\n        display:inline-block;\n        padding:7px 12px;\n        border-radius:999px;\n        background:rgba(255,255,255,.72);\n        border:1px solid rgba(124,58,237,.18);\n        color:#6D28D9 !important;\n        -webkit-text-fill-color:#6D28D9 !important;\n        font-size:.76rem;\n        font-weight:900;\n        letter-spacing:.12em;\n        margin-bottom:18px;\n    }\n    .welcome-title{\n        color:#17142F !important;\n        -webkit-text-fill-color:#17142F !important;\n        font-size:clamp(2.8rem,7vw,5.4rem);\n        line-height:.92;\n        letter-spacing:-.055em;\n        font-weight:950;\n        margin:0 0 18px 0;\n    }\n    .welcome-gradient{\n        background:linear-gradient(90deg,#5B21B6,#7C3AED,#4F46E5);\n        -webkit-background-clip:text;\n        background-clip:text;\n        color:transparent !important;\n        -webkit-text-fill-color:transparent !important;\n    }\n    .welcome-tagline{\n        color:#403A63 !important;\n        -webkit-text-fill-color:#403A63 !important;\n        max-width:760px;\n        font-size:1.12rem;\n        line-height:1.7;\n        margin-bottom:26px;\n    }\n    .welcome-pills{\n        display:flex; flex-wrap:wrap; gap:9px;\n    }\n    .welcome-pill{\n        background:rgba(255,255,255,.76);\n        border:1px solid rgba(109,40,217,.14);\n        color:#4C1D95 !important;\n        -webkit-text-fill-color:#4C1D95 !important;\n        padding:8px 12px;\n        border-radius:999px;\n        font-size:.82rem;\n        font-weight:800;\n    }\n    .journey-card{\n        background:#FFFFFF;\n        border:1px solid #E9E5F5;\n        border-radius:20px;\n        padding:20px 20px 18px 20px;\n        min-height:184px;\n        box-shadow:0 10px 26px rgba(30,27,75,.055);\n        margin-bottom:8px;\n    }\n    .journey-num{\n        color:#7C3AED !important;\n        -webkit-text-fill-color:#7C3AED !important;\n        font-size:.74rem;font-weight:900;letter-spacing:.11em;\n    }\n    .journey-name{\n        color:#17142F !important;\n        -webkit-text-fill-color:#17142F !important;\n        font-size:1.14rem;font-weight:900;margin:8px 0 7px;\n    }\n    .journey-copy{\n        color:#64748B !important;\n        -webkit-text-fill-color:#64748B !important;\n        font-size:.91rem;line-height:1.55;\n    }\n    .video-shell{\n        background:linear-gradient(135deg,#17142F 0%,#2E2457 100%);\n        border:1px solid rgba(255,255,255,.10);\n        border-radius:24px;\n        padding:30px;\n        margin:18px 0 22px 0;\n        box-shadow:0 18px 42px rgba(30,27,75,.14);\n    }\n    .video-shell, .video-shell *{\n        color:#FFFFFF !important;\n        -webkit-text-fill-color:#FFFFFF !important;\n    }\n    .video-label{\n        color:#C4B5FD !important;\n        -webkit-text-fill-color:#C4B5FD !important;\n        font-size:.75rem;font-weight:900;letter-spacing:.12em;\n    }\n    .video-title{font-size:1.55rem;font-weight:900;margin:7px 0 8px;}\n    .video-copy{color:#DDD6FE !important;-webkit-text-fill-color:#DDD6FE !important;line-height:1.6;}\n    .teacher-note{\n        background:#FAFAFF;\n        border:1px solid #E9E5F5;\n        border-left:5px solid #7C3AED;\n        border-radius:18px;\n        padding:20px 22px;\n        margin:24px 0 18px;\n    }\n    .teacher-note-title{\n        color:#17142F !important;-webkit-text-fill-color:#17142F !important;\n        font-weight:900;font-size:1.05rem;margin-bottom:5px;\n    }\n    .teacher-note-copy{\n        color:#64748B !important;-webkit-text-fill-color:#64748B !important;\n        line-height:1.6;\n    }\n\n/* Dramatic final onboarding CTA */\ndiv.st-key-welcome_enter button{\n    min-height:72px !important;\n    border-radius:20px !important;\n    font-size:1.18rem !important;\n    font-weight:950 !important;\n    letter-spacing:.035em !important;\n    border:1px solid rgba(255,255,255,.28) !important;\n    background:linear-gradient(100deg,#4F46E5 0%,#7C3AED 52%,#5B21B6 100%) !important;\n    box-shadow:0 16px 38px rgba(91,33,182,.28), inset 0 1px 0 rgba(255,255,255,.25) !important;\n    transition:transform .18s ease, box-shadow .18s ease !important;\n}\ndiv.st-key-welcome_enter button,\ndiv.st-key-welcome_enter button *{\n    color:#FFFFFF !important;\n    -webkit-text-fill-color:#FFFFFF !important;\n}\ndiv.st-key-welcome_enter button:hover{\n    transform:translateY(-3px) scale(1.01) !important;\n    box-shadow:0 22px 46px rgba(91,33,182,.36), inset 0 1px 0 rgba(255,255,255,.28) !important;\n}\n\n    </style>', unsafe_allow_html=True)
+
+    st.markdown('<div class="welcome-hero"><div class="welcome-kicker">✦ LENSUITE ELT · TEACHER-FACING AI WORKSPACE</div><div class="welcome-title">Design smarter.<br>Diagnose deeper.<br><span class="welcome-gradient">Decide as a teacher.</span></div><div class="welcome-tagline">From structured prompt design to linguistic diagnosis and controlled revision — one workspace built to keep professional judgement where it belongs: with the teacher.</div><div class="welcome-pills"><span class="welcome-pill">AI-assisted</span><span class="welcome-pill">Teacher-led</span><span class="welcome-pill">CEFR-informed</span><span class="welcome-pill">Context-aware</span></div></div>', unsafe_allow_html=True)
+
+
+    st.markdown("## Your LENSuite journey")
+    st.caption("Four stages. One continuous teacher-led workflow.")
+
+    c1, c2, c3, c4 = st.columns(4)
+    cards = [
+        ("01 · DESIGN", "PromptLENS", "Turn learner, language, pedagogy and context decisions into a structured GenAI prompt."),
+        ("02 · DIAGNOSE", "LangMRI", "Examine linguistic, pedagogical and contextual evidence in the generated material."),
+        ("03 · DECIDE", "LENSFix", "Review the consolidated findings and choose only the changes you want to make."),
+        ("04 · REVISE", "LENSRevise", "Build a controlled revision prompt containing only your teacher-approved changes."),
+    ]
+    for col, (num, name, copy) in zip((c1,c2,c3,c4), cards):
+        with col:
+            st.markdown(
+                f'<div class="journey-card">'
+                f'<div class="journey-num">{num}</div>'
+                f'<div class="journey-name">{name}</div>'
+                f'<div class="journey-copy">{copy}</div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+
+    st.markdown("""
+    <div class="video-shell">
+      <div class="video-label">🎬 QUICK TOUR</div>
+      <div class="video-title">See LENSuite in action</div>
+      <div class="video-copy">
+        A short walkthrough video will live right here. Watch the complete workflow first,
+        or jump straight into LENSuite and explore it yourself.
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # VIDEO PLACEHOLDER:
+    # When your tutorial MP4 is ready, place it in the project (for example:
+    # assets/lensuite_tutorial.mp4) and replace the placeholder above / uncomment:
+    #
+    # st.video("assets/lensuite_tutorial.mp4")
+    #
+    # A supported hosted video URL can also be passed to st.video(...).
+
+    st.markdown("""
+    <div class="teacher-note">
+      <div class="teacher-note-title">Built for teachers — not to replace teachers.</div>
+      <div class="teacher-note-copy">
+        LENSuite organises evidence and supports review. It does not provide formal CEFR
+        certification, and it does not make the final pedagogical decision. Interpret its
+        evidence in relation to your learners, lesson purpose, curriculum or course context,
+        and available support.
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="text-align:center;margin-top:34px;margin-bottom:12px;">
+        <div style="font-size:.76rem;font-weight:900;letter-spacing:.16em;color:#7C3AED;">
+            READY WHEN YOU ARE
+        </div>
+        <div style="font-size:1.7rem;font-weight:950;color:#17142F;margin-top:7px;">
+            All set?
+        </div>
+        <div style="font-size:.96rem;color:#64748B;margin-top:4px;">
+            Your LENSuite workspace is ready.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.button(
+        "✨ ALL SET, BRING IT ON! →",
+        type="primary",
+        use_container_width=True,
+        key="welcome_enter"
+    ):
+        st.session_state.page = "home"
+        st.rerun()
+
+
+
 def home_page():
     render_brand()
     st.markdown("""<div class="lens-hero"><div class="lens-kicker">AI-ASSISTED ELT · TEACHER-CONTROLLED</div><h1>Design with intention.<br>Decide with evidence.</h1><p>LENSuite helps English language teachers design informed prompts, examine generated materials, make professional revision decisions, and translate those decisions into controlled revisions.</p></div>""",unsafe_allow_html=True)
@@ -251,6 +448,10 @@ def home_page():
     st.markdown("""<div class="lens-principle"><strong>Teacher-in-the-loop by design.</strong> LENSuite provides diagnostic and revision support; the teacher remains the final decision-maker.</div>""",unsafe_allow_html=True)
 
 
+
+
+    st.markdown("---")
+    st.link_button("💬 Give Feedback","https://forms.gle/NFHUbM3C1g1aM5RU6",use_container_width=True)
 
 def build_lexical_evidence_profile(spec):
     """Build a serialisable lexical evidence profile for the diagnostic package.
@@ -273,7 +474,7 @@ def build_lexical_evidence_profile(spec):
             {"label": "CEFR lexical expectation", "value": cefr},
             {"label": "Vocabulary profile", "value": vocab_profile},
             {"label": "Vocabulary / topic focus", "value": vocab_focus},
-            {"label": "Corpus evidence", "value": "SUBTLEX-US frequency is used as a review signal, not a CEFR classifier"},
+            {"label": "Lexical reference", "value": "CEFR-J Vocabulary Profile is used as reference evidence, not formal CEFR certification"},
         ]
         context_type = "tertiary"
     else:
@@ -288,14 +489,14 @@ def build_lexical_evidence_profile(spec):
             {"label": "CEFR lexical expectation", "value": cefr},
             {"label": "Vocabulary profile", "value": vocab_profile},
             {"label": "Vocabulary / topic focus", "value": vocab_focus},
-            {"label": "Corpus evidence", "value": "SUBTLEX-US frequency is used as a review signal, not a CEFR classifier"},
+            {"label": "Lexical reference", "value": "CEFR-J Vocabulary Profile is used as reference evidence, not formal CEFR certification"},
         ]
         context_type = "school"
 
     return {
         "context_type": context_type,
         "evidence_layers": layers,
-        "interpretation_rule": "frequency ≠ CEFR level ≠ difficulty",
+        "interpretation_rule": "CEFR-J reference level ≠ automatic pedagogical suitability",
     }
 
 
@@ -324,7 +525,7 @@ def render_lexical_evidence_profile(spec):
             ("CEFR lexical expectation", cefr),
             ("Vocabulary profile", vocab_profile),
             ("Vocabulary / topic focus", vocab_focus),
-            ("Corpus evidence", "SUBTLEX-US frequency is used as a review signal, not a CEFR classifier"),
+            ("Lexical reference", "CEFR-J Vocabulary Profile is used as reference evidence, not formal CEFR certification"),
         ]
     else:
         textbook = spec.get("textbook_reference") or "Not specified"
@@ -338,14 +539,14 @@ def render_lexical_evidence_profile(spec):
             ("CEFR lexical expectation", cefr),
             ("Vocabulary profile", vocab_profile),
             ("Vocabulary / topic focus", vocab_focus),
-            ("Corpus evidence", "SUBTLEX-US frequency is used as a review signal, not a CEFR classifier"),
+            ("Lexical reference", "CEFR-J Vocabulary Profile is used as reference evidence, not formal CEFR certification"),
         ]
 
     for label, value in rows:
         st.write(f"**{label}:** {value}")
 
     st.info(
-        "Interpretation rule: frequency ≠ CEFR level ≠ difficulty. Curriculum, textbook/course and corpus evidence support teacher judgement; they do not replace it."
+        "Interpretation rule: CEFR-J reference levels provide lexical evidence, not automatic pedagogical suitability. Curriculum, textbook/course context and teacher judgement remain essential."
     )
 
 
@@ -619,12 +820,12 @@ def promptlens_page():
             value=True,
             help=(
                 "Recommended. LangMRI will present textbook, curriculum or tertiary course context "
-                "alongside corpus-frequency evidence. This does not automatically mark a word as suitable."
+                "alongside CEFR-J lexical reference evidence. This does not automatically mark a word as suitable."
             )
         )
         st.caption(
             "Lexical evidence model: alignment context → CEFR lexical expectation → teacher-selected focus → "
-            "SUBTLEX-US frequency → teacher judgement."
+            "CEFR-J lexical reference → teacher judgement."
         )
 
     # 3. DISCOURSE & COMMUNICATION
@@ -749,6 +950,7 @@ def promptlens_page():
         unsafe_allow_html=True
     )
 
+    st.markdown("<div style=\"height:14px\"></div>", unsafe_allow_html=True)
     if st.button(
         "✦ BUILD MY PROMPT",
         type="primary",
@@ -1408,7 +1610,14 @@ def langmri_page():
 
 
             )
+            cefr_lexical_results = analyse_text_cefr(
+                material_text,
+                target_cefr
+            )
 
+            cefr_lexical_summary = build_teacher_lexical_summary(
+                cefr_lexical_results
+            )
 
 
             grammar_flag = None
@@ -1483,27 +1692,18 @@ def langmri_page():
 
 
 
-                lexical_flag = evaluate_lexical_frequency(
-
-
-
-                    lexical_results["analysed_items"],
-
-
-
-                    vocabulary_profile=saved_spec.get("vocabulary", ""),
-
-
-
-                    vocabulary_focus=saved_spec.get("vocab_target", ""),
-
-
-
-                    material_topic=saved_spec.get("topic", "")
-
-
-
-                )
+                lexical_flag = {
+                    "lens": "Lexical Lens",
+                    "feature": "CEFR-J lexical reference",
+                    "status": "PROFILED",
+                    "observation": (
+                        f'{cefr_lexical_summary["at_or_below_target"]} of ' 
+                        f'{cefr_lexical_summary["classified_words"]} CEFR-J-classified ' 
+                        f'lexical types are referenced at or below the selected {target_cefr} level.'
+                    ),
+                    "evidence": cefr_lexical_summary["reference_note"],
+                    "interpretation": cefr_lexical_summary["interpretation"],
+                }
 
 
 
@@ -1600,6 +1800,10 @@ def langmri_page():
 
 
                     "lexical_review_items": lexical_review_items,
+
+                    "cefr_lexical_results": cefr_lexical_results,
+
+                    "cefr_lexical_summary": cefr_lexical_summary,
 
                     "lexical_evidence_profile": build_lexical_evidence_profile(saved_spec),
 
@@ -1852,23 +2056,10 @@ def langmri_page():
 
 
 
+                    elif flag["status"] == "PROFILED":
+                        st.info(f'🔵 {flag["lens"]}: {flag["status"]}')
                     else:
-
-
-
-                        st.info(
-
-
-
-                            f'⚪ {flag["lens"]}: '
-
-
-
-                            f'{flag["status"]}'
-
-
-
-                        )
+                        st.info(f'⚪ {flag["lens"]}: {flag["status"]}')
 
 
 
@@ -2040,246 +2231,54 @@ def langmri_page():
 
 
 
-            st.write(
-
-
-
-                "### Corpus Frequency Profile"
-
-
-
-            )
-
-
-
-            col1, col2 = st.columns(2)
-
-
-
-            col1.metric(
-
-
-
-                "Matched lexical types",
-
-
-
-                lexical_results["matched_count"]
-
-
-
-            )
-
-
-
-            col2.metric(
-
-
-
-                "Not found in corpus",
-
-
-
-                lexical_results["unmatched_count"]
-
-
-
-            )
-
-
+            st.write("### CEFR-J Lexical Reference Profile")
 
             st.caption(
-
-
-
-                "Frequency evidence is drawn from the "
-
-
-
-                "SUBTLEX-US reference dataset. Corpus "
-
-
-
-                "frequency describes how commonly a word "
-
-
-
-                "occurs in that reference corpus; it does "
-
-
-
-                "not directly determine CEFR level or "
-
-
-
-                "pedagogical appropriateness."
-
-
-
+                "CEFR-J is used as lexical reference evidence. Results describe "
+                "classified lexical types relative to the selected target level; "
+                "they are not formal CEFR certification."
             )
 
+            summary = cefr_lexical_summary
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Classified lexical types", summary["classified_words"])
+            c2.metric(f"At/below {target_cefr}", summary["at_or_below_target"])
+            c3.metric(f"Above {target_cefr}", summary["above_target"])
+            c4.metric("Not classified", summary["not_classified"])
 
+            st.info(summary["interpretation"])
 
-            with st.expander("ⓘ Why does LangMRI use SUBTLEX-US?"):
+            learning_items = summary.get("learning_opportunities", [])
+            if learning_items:
+                st.write("#### Potential lexical learning opportunities")
+                st.caption("Above-target items are not automatically inappropriate. Review whether they are topic-relevant, understandable in context, or useful as intentionally supported vocabulary.")
+                opportunity_rows = []
+                for item in learning_items:
+                    opportunity_rows.append({"Word": item.get("word", ""), "Matched headword": item.get("headword", ""), "CEFR-J reference level": ", ".join(item.get("reference_levels", [])) or "Not specified"})
+                st.dataframe(opportunity_rows, use_container_width=True, hide_index=True)
+            else:
+                st.success(f"No CEFR-J-classified lexical types were found exclusively above the selected {target_cefr} reference level.")
+
+            unclassified_words = summary.get("unclassified_words", [])
+            if unclassified_words:
+                with st.expander("Unclassified lexical items"):
+                    st.write(", ".join(unclassified_words))
+                    st.caption("Unclassified does not automatically mean difficult or unsuitable. An item may be a proper name, specialised form, or simply absent from the CEFR-J reference data.")
+
+            with st.expander("ⓘ How does LangMRI use CEFR-J?"):
                 st.markdown("""
-**SUBTLEX-US is used as a lexical-frequency reference — not as a CEFR framework.**
+**CEFR-J is used as lexical reference evidence — not as formal CEFR certification.**
 
-LangMRI needs an empirical reference point for describing how common or uncommon a lexical item is. SUBTLEX-US provides word-frequency estimates derived from a large corpus of American film and television subtitles (approximately 51 million words). Subtitle-based frequency norms provide an empirically grounded account of lexical occurrence and have been validated against human lexical-processing data.
+LangMRI compares lexical items with entries available in the CEFR-J Vocabulary Profile and reports their position relative to the teacher-selected target.
 
-LangMRI uses the **Zipf frequency scale** to make corpus frequencies easier to interpret. Lower Zipf values indicate relatively less frequent words, while higher values indicate more frequent words.
+**This evidence can support:** describing the lexical reference profile, identifying above-target items for teacher review, and noticing possible vocabulary learning opportunities.
 
-**What this evidence can tell the teacher**
-- whether a lexical item is relatively common or less common in the reference corpus;
-- which lower-frequency items may deserve closer professional review;
-- where vocabulary demands may warrant additional support or contextualisation.
+**It does not establish:** that every word has one universal CEFR level in every context, that an above-target word is automatically inappropriate, that an unclassified word is difficult, or that a material passes or fails a CEFR standard.
 
-**What it does NOT tell the teacher**
-- that a word belongs to a particular CEFR level;
-- that a less frequent word is automatically difficult or inappropriate;
-- that a material passes or fails a CEFR standard.
-
-Frequency is therefore treated as **diagnostic evidence, not a pedagogical verdict**. The teacher remains responsible for judging vocabulary in relation to learner proficiency, topic, instructional purpose and classroom context.
-
-**Reference basis:** Brysbaert & New (2009), *Behavior Research Methods*; van Heuven et al. (2014), *Quarterly Journal of Experimental Psychology*.
+The teacher remains responsible for interpretation in relation to learners, topic, instructional purpose, curriculum/course context and available support.
                 """)
 
-            if lexical_results["analysed_items"]:
-
-
-
-                sorted_items = sorted(
-
-
-
-                    lexical_results["analysed_items"],
-
-
-
-                    key=lambda item: item["zipf"]
-
-
-
-                )
-
-
-
-                st.write(
-
-
-
-                    "#### 🔎 Vocabulary Frequency"
-
-
-
-                )
-
-
-
-                st.caption(
-
-
-
-                    "This shows how commonly vocabulary in the "
-
-
-
-                    "material occurs in the reference corpus. "
-
-
-
-                    "Less common does not automatically mean "
-
-
-
-                    "difficult or inappropriate."
-
-
-
-                )
-
-
-
-                table_data = []
-
-
-
-                for item in sorted_items:
-
-
-
-                    zipf = item["zipf"]
-
-
-
-                    if zipf <= 3:
-
-
-
-                        frequency_label = "Less common"
-
-
-
-                    elif zipf < 4:
-
-
-
-                        frequency_label = "Moderately common"
-
-
-
-                    elif zipf < 5:
-
-
-
-                        frequency_label = "Common"
-
-
-
-                    else:
-
-
-
-                        frequency_label = "Very common"
-
-
-
-                    table_data.append({
-
-
-
-                        "Word": item["word"],
-
-
-
-                        "Part of speech": item["pos"],
-
-
-
-                        "How common?": frequency_label
-
-
-
-                    })
-
-
-
-                st.dataframe(
-
-
-
-                    table_data,
-
-
-
-                    use_container_width=True,
-
-
-
-                    hide_index=True
-
-
-
-                )
+            st.caption(summary["reference_note"])
 
 
 
@@ -2369,14 +2368,13 @@ def get_support_recommendations(spec):
     return ["Add a contextual example","Highlight it as target vocabulary","Add a short learner-friendly gloss"]
 
 def lensfix_page():
-
     render_brand()
     render_workflow("lensfix")
 
     st.markdown(
-        '<div class="fix-intro"><div class="fix-intro-title">A concise review before you use or revise the material.</div>'
-        '<div class="fix-intro-copy">LENSFix summarises what LangMRI observed without turning descriptive evidence '
-        'into automatic corrections. Use the summary alongside your knowledge of your learners and lesson.</div></div>',
+        '<div class="fix-intro"><div class="fix-intro-title">One review. One teacher decision.</div>'
+        '<div class="fix-intro-copy">LENSFix brings the LangMRI findings together into a single professional review. '
+        'Select only the points you want to act on; LENSuite carries those teacher-approved decisions into LENSRevise.</div></div>',
         unsafe_allow_html=True
     )
 
@@ -2391,7 +2389,6 @@ def lensfix_page():
             st.rerun()
 
     package = st.session_state.get("diagnostic_package")
-
     if not package:
         st.warning("No LangMRI diagnostic results are available yet. Run LangMRI first.")
         if st.button("🔬 Go to LangMRI", use_container_width=True, key="lensfix_go_mri"):
@@ -2402,212 +2399,184 @@ def lensfix_page():
     spec = package["specification"]
     flags = [f for f in package.get("flags", []) if f]
     missing_components = package.get("missing_components", [])
+    cefr_summary = package.get("cefr_lexical_summary", {})
 
-    with st.expander("ⓘ How is this summary formed?", expanded=False):
-        st.markdown(
-            """
-LENSFix summarises **observable evidence** from LangMRI in relation to the teaching specification you provided.
+    grammar_flag = next((f for f in flags if "grammar" in str(f.get("lens", "")).lower()), None)
+    discourse_flag = next((f for f in flags if "discourse" in str(f.get("lens", "")).lower()), None)
 
-It considers:
-- the intended learner and CEFR target;
-- the language, genre, task and resource features requested in PromptLENS;
-- curriculum, course or textbook context when provided;
-- descriptive linguistic evidence from LangMRI; and
-- requested components that were or were not detected.
+    with st.expander("ⓘ How should I use this summary?", expanded=False):
+        st.markdown("""
+LENSFix brings LangMRI evidence into **one teacher-facing review**. It does not decide that the material is good, bad, suitable or unsuitable.
 
-**Vocabulary is treated cautiously.** Corpus frequency remains background descriptive evidence only. A less-frequent word is not automatically difficult, inappropriate or outside the intended CEFR level. LENSFix therefore does not flag individual words simply because they are uncommon in the reference corpus.
+Under **Teacher Decision**, select only the flagged points that **you** want to act on. Leave a point unselected when, in your professional judgement, it is acceptable for your learners, lesson purpose or teaching context.
 
-A small amount of appropriately challenging, topic-relevant vocabulary can be useful as a **learning opportunity**, especially when meaning can be inferred from context or supported by the teacher.
+CEFR-J is lexical reference evidence, not formal CEFR certification. Above-target vocabulary is not automatically inappropriate and may be retained as a supported learning opportunity.
 
-The summary is decision support, not certification. **The teacher makes the final judgement.**
-            """
-        )
+**The teacher remains the final decision-maker.**
+        """)
 
     st.markdown(
         '<div class="fix-principle"><strong>Teacher review principle:</strong> '
-        'LENSuite describes what it can observe. It does not decide whether the material is good, bad, '
-        'easy, difficult or suitable on the teacher’s behalf.</div>',
+        'LangMRI provides evidence. LENSFix organises that evidence. Only the teacher decides what should actually be revised.</div>',
         unsafe_allow_html=True
     )
 
     st.subheader("🎯 Teaching Context")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("CEFR", spec.get("cefr", "Not specified"))
-    c2.metric("Primary Skill", spec.get("skill", "Not specified"))
-    c3.metric("Resource", spec.get("resource_type", "Not specified"))
+    c1,c2,c3=st.columns(3)
+    c1.metric("CEFR",spec.get("cefr","Not specified"))
+    c2.metric("Primary Skill",spec.get("skill","Not specified"))
+    c3.metric("Resource",spec.get("resource_type","Not specified"))
+    st.caption(f'Topic: {spec.get("topic") or "Not specified"}  ·  Vocabulary focus: {spec.get("vocab_target") or spec.get("vocabulary") or "Not specified"}')
 
-    st.caption(
-        f'Topic: {spec.get("topic") or "Not specified"}  ·  '
-        f'Vocabulary focus: {spec.get("vocab_target") or spec.get("vocabulary") or "Not specified"}'
-    )
+    summary_points=[]
+    review_options=[]
+
+    if grammar_flag:
+        status=grammar_flag.get("status","NOT ASSESSED")
+        obs=grammar_flag.get("observation") or grammar_flag.get("interpretation") or "Grammar evidence was recorded."
+        summary_points.append(f"**Grammar — {status}:** {obs}")
+        if status in {"REVIEW","MISMATCH"}:
+            review_options.append(("Grammar",f"Grammar — {obs}","Review the flagged grammar finding and revise only where needed to better reflect the teacher's intended grammar focus."))
+
+    classified=cefr_summary.get("classified_words",0)
+    below=cefr_summary.get("at_or_below_target",0)
+    above=cefr_summary.get("above_target",0)
+    target=cefr_summary.get("target_level") or spec.get("cefr","target")
+    opportunities=cefr_summary.get("learning_opportunities",[])
+
+    if classified:
+        s=f"**Vocabulary — PROFILED:** {below} of {classified} CEFR-J-classified lexical types are referenced at or below {target}."
+        if above:
+            s+=f" {above} lexical type{' is' if above==1 else 's are'} referenced above the selected level and may be a manageable learning opportunity rather than a problem."
+        summary_points.append(s)
+        if opportunities:
+            labels=[]
+            for item in opportunities:
+                levels=", ".join(item.get("reference_levels",[])) or "above target"
+                labels.append(f'{item.get("word","")} ({levels})')
+            joined=", ".join(labels)
+            review_options.append(("Vocabulary",f"Vocabulary learning opportunity — {joined}",f"Review the potential vocabulary learning opportunity ({joined}). Keep it if useful and manageable; otherwise add brief support or revise only the item(s) the teacher considers necessary."))
+    else:
+        summary_points.append("**Vocabulary — LIMITED EVIDENCE:** CEFR-J did not classify enough lexical items for a useful reference profile.")
+
+    if discourse_flag:
+        status=discourse_flag.get("status","NOT ASSESSED")
+        obs=discourse_flag.get("observation") or discourse_flag.get("interpretation") or "Discourse evidence was recorded."
+        summary_points.append(f"**Task / Genre / Communication — {status}:** {obs}")
+        if status in {"REVIEW","MISMATCH"}:
+            review_options.append(("Discourse",f"Task / Genre / Communication — {obs}","Review the flagged discourse, genre or communicative finding and revise only where needed to better match the teacher's intended task and purpose."))
+
+    if missing_components:
+        missing=", ".join(missing_components)
+        summary_points.append(f"**Requested resource features — REVIEW:** LangMRI did not detect: {missing}. Check the material manually before deciding whether revision is needed.")
+        review_options.append(("Resources",f"Requested resource features — {missing}",f"Check the requested resource feature(s): {missing}. If genuinely missing, add them while preserving the rest of the material."))
+    else:
+        summary_points.append("**Requested resource features:** No requested answer-key or teacher-note component is currently marked as missing.")
+
+    alignment=spec.get("curriculum_reference") or spec.get("alignment_pathway") or "Not specified"
+    context=f"**Context & alignment:** Reference context — {alignment}."
+    if spec.get("textbook_reference"):
+        unit=f' · {spec.get("textbook_unit")}' if spec.get("textbook_unit") else ""
+        context+=f' Textbook/coursebook — {spec.get("textbook_reference")}{unit}.'
+    context+=" This supports teacher review and is not automatic certification."
+    summary_points.append(context)
 
     st.divider()
-    st.subheader("◇ Review Summary")
-    st.caption(
-        "Use these observations as prompts for professional reflection rather than pass/fail judgements."
+    st.subheader("◇ Full Review Summary")
+    st.caption("One consolidated overview of the LangMRI findings in relation to your PromptLENS specification.")
+    # Explicit LENSFix summary card with dedicated colour classes.
+    summary_html = []
+    for point in summary_points:
+        parts = point.split("**")
+        rendered_parts = []
+        for i, part in enumerate(parts):
+            if i % 2 == 1:
+                rendered_parts.append(f'<strong class="lensfix-summary-strong">{part}</strong>')
+            else:
+                rendered_parts.append(part)
+        point_upper = point.upper()
+
+        # Colour communicates review priority without changing the teacher's decision.
+        if "REVIEW" in point_upper or "MISMATCH" in point_upper:
+            status_class = "summary-review"
+        elif (
+            "NOT SPECIFIED" in point_upper
+            or "LIMITED EVIDENCE" in point_upper
+            or "NOT ASSESSED" in point_upper
+        ):
+            status_class = "summary-unspecified"
+        else:
+            status_class = "summary-fulfilled"
+
+        summary_html.append(
+            f'<li class="lensfix-summary-item {status_class}">'
+            + "".join(rendered_parts)
+            + '</li>'
+        )
+
+    st.markdown(
+        '<div class="lensfix-summary-card"><ul class="lensfix-summary-list">'
+        + "".join(summary_html)
+        + '</ul></div>',
+        unsafe_allow_html=True
     )
 
-    # LANGUAGE / GRAMMAR
-    grammar_flag = next(
-        (f for f in flags if "grammar" in str(f.get("lens", "")).lower()),
-        None
-    )
-    with st.container(border=True):
-        st.markdown("### Language & Grammar")
-        if grammar_flag:
-            st.write(grammar_flag.get("observation") or grammar_flag.get("interpretation") or
-                     "LangMRI recorded descriptive evidence for the requested grammar target.")
-        else:
-            st.write(
-                "Review whether the language patterns in the material support the intended learning objective "
-                "and are manageable for your learners."
-            )
-        st.caption(
-            "Consider the target grammar as part of the whole task rather than as an automatic pass/fail feature."
-        )
-
-    # VOCABULARY
-    with st.container(border=True):
-        st.markdown("### Vocabulary & Learning Opportunity")
-        st.write(
-            "Vocabulary is not flagged word-by-word on frequency alone. Instead, review whether the material is "
-            "generally accessible while still giving learners a manageable opportunity to encounter new language."
-        )
-        st.info(
-            "💡 A useful classroom material does not need to contain only familiar words. "
-            "One or two appropriately challenging, topic-relevant words can become useful learning opportunities "
-            "when learners can understand them through context, explanation or brief support."
-        )
-        st.caption(
-            "Corpus frequency can describe how common a word is in a reference dataset, but it cannot by itself "
-            "tell us whether that word is difficult or pedagogically inappropriate for your learners."
-        )
-
-    # DISCOURSE / TASK
-    discourse_flag = next(
-        (f for f in flags if "discourse" in str(f.get("lens", "")).lower()),
-        None
-    )
-    with st.container(border=True):
-        st.markdown("### Task, Genre & Communication")
-        if discourse_flag:
-            st.write(discourse_flag.get("observation") or discourse_flag.get("interpretation") or
-                     "LangMRI recorded descriptive evidence related to the requested discourse features.")
-        else:
-            st.write(
-                f'Review whether the material functions as the intended **{spec.get("genre") or "genre"}** '
-                f'and supports the intended communicative purpose: '
-                f'**{spec.get("communicative_function") or "not specified"}**.'
-            )
-        st.caption(
-            "Genre and communicative appropriateness still require teacher interpretation in relation to the actual task."
-        )
-
-    # REQUESTED COMPONENTS
-    with st.container(border=True):
-        st.markdown("### Requested Resource Features")
-        if missing_components:
-            missing_text = ", ".join(missing_components)
-            st.warning(
-                f"LangMRI did not detect the following requested component(s): **{missing_text}**."
-            )
-            st.write(
-                "Check the material yourself before revising, as automatic detection may not capture every format or wording."
-            )
-        else:
-            st.success(
-                "No requested answer-key or teacher-note component is currently marked as missing."
-            )
-
-    # CONTEXT / ALIGNMENT
-    with st.container(border=True):
-        st.markdown("### Context & Alignment")
-        alignment = (
-            spec.get("curriculum_reference")
-            or spec.get("alignment_pathway")
-            or "Not specified"
-        )
-        st.write(f"**Reference context:** {alignment}")
-        if spec.get("textbook_reference"):
-            unit = f' · {spec.get("textbook_unit")}' if spec.get("textbook_unit") else ""
-            st.write(f'**Textbook/coursebook:** {spec.get("textbook_reference")}{unit}')
-        st.caption(
-            "Curriculum, textbook and course information provides context for teacher review; "
-            "it is not treated as automatic certification of the generated material."
-        )
+    if review_options:
+        st.info(f"{len(review_options)} point(s) are available for teacher review below. They are not automatically selected for revision.")
+    else:
+        st.success("No LangMRI finding is currently marked for review or mismatch. You may still add your own revision instruction.")
 
     st.divider()
     st.subheader("👩‍🏫 Teacher Decision")
-    st.write(
-        "Based on the summary above and your knowledge of your learners, decide whether the material is ready to use "
-        "or whether you want to revise something."
-    )
+    st.write("Tick only the flagged points you want LENSRevise to act on. Leaving a box unticked means you have not approved a revision for that point.")
 
-    teacher_decision = st.radio(
-        "What would you like to do?",
-        [
-            "✓ I am happy with the material",
-            "✎ I want to revise something"
-        ],
-        index=None,
-        key="lensfix_summary_teacher_decision"
-    )
+    selected=[]
+    if review_options:
+        with st.container(border=True):
+            for key,label,instruction in review_options:
+                if st.checkbox(label,key=f"lensfix_review_{key.lower()}"):
+                    selected.append(instruction)
+    else:
+        st.caption("There are no automatically flagged review points to select.")
 
-    if teacher_decision == "✓ I am happy with the material":
-        st.session_state.pop("lensfix_revision_brief", None)
-        st.success(
-            "Teacher decision recorded: no revision requested. "
-            "You can return to LangMRI or use the material as appropriate for your class."
-        )
+    custom=st.text_area("Optional: add your own revision instruction",placeholder="e.g. Keep the content, but add a short vocabulary box for two challenging words.",height=110,key="lensfix_custom_revision_note")
+    if custom.strip():
+        selected.append(custom.strip())
 
-    elif teacher_decision == "✎ I want to revise something":
-        revision_note = st.text_area(
-            "What would you like to change?",
-            placeholder=(
-                "Write your own revision instruction, e.g. "
-                "'Keep the content, but add a short vocabulary box for two challenging words.'"
-            ),
-            height=130,
-            key="lensfix_teacher_revision_note"
-        )
-
-        if revision_note.strip():
-            revision_brief = (
-                "Revise the material using ONLY the following teacher-approved change:\n\n"
-                f"1. {revision_note.strip()}\n\n"
-                "Preserve all other content unless a change is necessary to implement this instruction."
-            )
-            st.session_state["lensfix_revision_brief"] = revision_brief
+    if selected:
+        numbered="\\n".join(f"{i}. {instruction}" for i,instruction in enumerate(selected,start=1))
+        brief=("Revise the material using ONLY the following teacher-approved changes:\\n\\n"+numbered+"\\n\\nPreserve the original meaning, structure, learning objective and teaching purpose unless one of the teacher-approved changes requires adjustment. Do not introduce additional changes merely because you would prefer them.")
+        st.session_state["lensfix_revision_brief"]=brief
+        st.markdown('<div class="fix-ready"><strong>Ready for LENSRevise.</strong> Only the points you selected, plus any instruction you added, will be carried forward.</div>',unsafe_allow_html=True)
+        with st.expander("Review what will be revised"):
             st.markdown(
-                '<div class="fix-ready"><strong>Ready for LENSRevise.</strong> '
-                'Your own revision decision will be carried forward.</div>',
+                '<div class="lensfix-revision-preview">'
+                '<div class="lensfix-revision-title">Teacher-approved changes</div>'
+                + "".join(
+                    f'<div class="lensfix-revision-item">{i}. {instruction}</div>'
+                    for i, instruction in enumerate(selected, start=1)
+                )
+                + '<div class="lensfix-revision-preserve">'
+                  'Everything else in the material will be preserved unless one of '
+                  'these teacher-approved changes requires an adjustment.'
+                  '</div></div>',
                 unsafe_allow_html=True
             )
-        else:
-            st.session_state.pop("lensfix_revision_brief", None)
-            st.info("Add your revision instruction when you are ready.")
+    else:
+        st.session_state.pop("lensfix_revision_brief",None)
+        st.info("No revision has been selected. If you are satisfied with the material, you can use it without sending anything to LENSRevise.")
 
-    nav1, nav2 = st.columns(2)
+    nav1,nav2=st.columns(2)
     with nav1:
-        if st.button("← Back to LangMRI", use_container_width=True, key="lensfix_back_to_mri"):
-            st.session_state.page = "langmri"
-            st.rerun()
+        if st.button("← Back to LangMRI",use_container_width=True,key="lensfix_back_to_mri"):
+            st.session_state.page="langmri"; st.rerun()
     with nav2:
         if st.session_state.get("lensfix_revision_brief"):
-            if st.button(
-                "✨ Continue to LENSRevise →",
-                type="primary",
-                use_container_width=True,
-                key="continue_to_lensrevise"
-            ):
-                st.session_state.page = "lensrevise"
-                st.rerun()
-
+            if st.button("✨ Continue to LENSRevise →",type="primary",use_container_width=True,key="continue_to_lensrevise"):
+                st.session_state.page="lensrevise"; st.rerun()
 
 
 # ============================================================
-
-
 
 def lensrevise_page():
 
@@ -2939,6 +2908,12 @@ def lensrevise_page():
 
 
 
+    st.divider()
+    st.markdown("### 💬 Finished exploring LENSuite?")
+    st.write("Your feedback will help improve this prototype for English teachers.")
+    st.link_button("Share Feedback →","https://forms.gle/NFHUbM3C1g1aM5RU6",use_container_width=True)
+
+
 # ============================================================
 
 
@@ -2951,7 +2926,12 @@ def lensrevise_page():
 
 
 
-if st.session_state.page == "home":
+if st.session_state.page == "welcome":
+
+    welcome_page()
+
+
+elif st.session_state.page == "home":
 
 
 
