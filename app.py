@@ -1,5 +1,5 @@
 import streamlit as st
-
+import os 
 
 
 from modules.lens_engine import build_prompt
@@ -7,6 +7,8 @@ from modules.lens_engine import build_prompt
 
 
 from modules.langmri_engine import analyse_text
+from modules.grammar_syntax_engine import build_grammar_flag
+from modules.writing_discourse_engine import build_writing_flags
 
 
 
@@ -371,62 +373,66 @@ def welcome_page():
                 f'</div>',
                 unsafe_allow_html=True
             )
+    st.markdown("""
+        <div class="video-shell">
+          <div class="video-label">🎬 QUICK TOUR</div>
+          <div class="video-title">See LENSuite in action</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.video("https://youtu.be/KrF4wC5ChJc")
 
     st.markdown("""
-    <div class="video-shell">
-      <div class="video-label">🎬 QUICK TOUR</div>
-      <div class="video-title">See LENSuite in action</div>
-      <div class="video-copy">
-        A short walkthrough video will live right here. Watch the complete workflow first,
-        or jump straight into LENSuite and explore it yourself.
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # VIDEO PLACEHOLDER:
-    # When your tutorial MP4 is ready, place it in the project (for example:
-    # assets/lensuite_tutorial.mp4) and replace the placeholder above / uncomment:
-    #
-    # st.video("assets/lensuite_tutorial.mp4")
-    #
-    # A supported hosted video URL can also be passed to st.video(...).
+        <div style="
+            text-align:center;
+            color:#64748B;
+            font-size:.92rem;
+            line-height:1.6;
+            margin-top:8px;
+            margin-bottom:22px;
+        ">
+            Watch the complete workflow first, or jump straight into LENSuite
+            and explore it yourself.
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div class="teacher-note">
-      <div class="teacher-note-title">Built for teachers — not to replace teachers.</div>
-      <div class="teacher-note-copy">
-        LENSuite organises evidence and supports review. It does not provide formal CEFR
-        certification, and it does not make the final pedagogical decision. Interpret its
-        evidence in relation to your learners, lesson purpose, curriculum or course context,
-        and available support.
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+        <div class="teacher-note">
+          <div class="teacher-note-title">Built for teachers — not to replace teachers.</div>
+          <div class="teacher-note-copy">
+            LENSuite organises evidence and supports review. It does not provide formal CEFR
+            certification, and it does not make the final pedagogical decision. Interpret its
+            evidence in relation to your learners, lesson purpose, curriculum or course context,
+            and available support.
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="text-align:center;margin-top:34px;margin-bottom:12px;">
-        <div style="font-size:.76rem;font-weight:900;letter-spacing:.16em;color:#7C3AED;">
-            READY WHEN YOU ARE
+        <div style="text-align:center;margin-top:34px;margin-bottom:12px;">
+            <div style="font-size:.76rem;font-weight:900;letter-spacing:.16em;color:#7C3AED;">
+                READY WHEN YOU ARE
+            </div>
+            <div style="font-size:1.7rem;font-weight:950;color:#17142F;margin-top:7px;">
+                All set?
+            </div>
+            <div style="font-size:.96rem;color:#64748B;margin-top:4px;">
+                Your LENSuite workspace is ready.
+            </div>
         </div>
-        <div style="font-size:1.7rem;font-weight:950;color:#17142F;margin-top:7px;">
-            All set?
-        </div>
-        <div style="font-size:.96rem;color:#64748B;margin-top:4px;">
-            Your LENSuite workspace is ready.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
     if st.button(
-        "✨ ALL SET, BRING IT ON! →",
-        type="primary",
-        use_container_width=True,
-        key="welcome_enter"
-    ):
-        st.session_state.page = "home"
-        st.rerun()
+            "✨ ALL SET, BRING IT ON! →",
+            type="primary",
+            use_container_width=True,
+            key="welcome_enter"
+        ):
+            st.session_state.page = "home"
+            st.rerun()
 
-
+    st.markdown("---")
+    st.link_button("💬 Give Feedback","https://forms.gle/NFHUbM3C1g1aM5RU6",use_container_width=True)
 
 def home_page():
     render_brand()
@@ -448,10 +454,6 @@ def home_page():
     st.markdown("""<div class="lens-principle"><strong>Teacher-in-the-loop by design.</strong> LENSuite provides diagnostic and revision support; the teacher remains the final decision-maker.</div>""",unsafe_allow_html=True)
 
 
-
-
-    st.markdown("---")
-    st.link_button("💬 Give Feedback","https://forms.gle/NFHUbM3C1g1aM5RU6",use_container_width=True)
 
 def build_lexical_evidence_profile(spec):
     """Build a serialisable lexical evidence profile for the diagnostic package.
@@ -1624,7 +1626,7 @@ def langmri_page():
 
 
 
-            discourse_flag = None
+            writing_flags = []
 
 
 
@@ -1640,36 +1642,17 @@ def langmri_page():
 
 
 
-                grammar_flag = evaluate_grammar_target(
-
-
-
-                    saved_spec.get("grammar", ""),
-
-
-
-                    results["past_form_count"]
-
-
-
+                grammar_flag = build_grammar_flag(
+                    material_text,
+                    saved_spec.get("grammar", "")
                 )
 
-
-
-                discourse_flag = evaluate_discourse(
-
-
-
+                writing_flags = build_writing_flags(
+                    material_text,
                     saved_spec.get("genre", ""),
-
-
-
-                    results["sequencing_marker_count"]
-
-
-
+                    saved_spec.get("register", ""),
+                    saved_spec.get("communicative_function", "")
                 )
-
 
 
                 pedagogical_flag = evaluate_requested_components(
@@ -1787,7 +1770,7 @@ def langmri_page():
 
 
 
-                        discourse_flag,
+                        *writing_flags,
 
 
 
@@ -1976,7 +1959,7 @@ def langmri_page():
 
 
 
-                    discourse_flag,
+                    *writing_flags,
 
 
 
@@ -2056,7 +2039,7 @@ def langmri_page():
 
 
 
-                    elif flag["status"] == "PROFILED":
+                    elif flag["status"] in {"PROFILED", "EVIDENCE FOUND"}:
                         st.info(f'🔵 {flag["lens"]}: {flag["status"]}')
                     else:
                         st.info(f'⚪ {flag["lens"]}: {flag["status"]}')
@@ -2402,7 +2385,10 @@ def lensfix_page():
     cefr_summary = package.get("cefr_lexical_summary", {})
 
     grammar_flag = next((f for f in flags if "grammar" in str(f.get("lens", "")).lower()), None)
-    discourse_flag = next((f for f in flags if "discourse" in str(f.get("lens", "")).lower()), None)
+    genre_flag = next((f for f in flags if str(f.get("lens", "")).lower() == "genre lens"), None)
+    function_flag = next((f for f in flags if "communicative function" in str(f.get("lens", "")).lower()), None)
+    organisation_flag = next((f for f in flags if "discourse & organisation" in str(f.get("lens", "")).lower()), None)
+    register_flag = next((f for f in flags if str(f.get("lens", "")).lower() == "register lens"), None)
 
     with st.expander("ⓘ How should I use this summary?", expanded=False):
         st.markdown("""
@@ -2459,12 +2445,20 @@ CEFR-J is lexical reference evidence, not formal CEFR certification. Above-targe
     else:
         summary_points.append("**Vocabulary — LIMITED EVIDENCE:** CEFR-J did not classify enough lexical items for a useful reference profile.")
 
-    if discourse_flag:
-        status=discourse_flag.get("status","NOT ASSESSED")
-        obs=discourse_flag.get("observation") or discourse_flag.get("interpretation") or "Discourse evidence was recorded."
-        summary_points.append(f"**Task / Genre / Communication — {status}:** {obs}")
-        if status in {"REVIEW","MISMATCH"}:
-            review_options.append(("Discourse",f"Task / Genre / Communication — {obs}","Review the flagged discourse, genre or communicative finding and revise only where needed to better match the teacher's intended task and purpose."))
+    writing_dimensions = [
+        ("Genre", genre_flag, "Review the flagged genre evidence and revise only if the teacher decides the material should more clearly reflect the requested genre."),
+        ("Communicative Function", function_flag, "Review the flagged communicative-function evidence and revise only if the teacher decides the intended communicative purpose needs clearer representation."),
+        ("Discourse & Organisation", organisation_flag, "Review the flagged discourse/organisation evidence and revise only if the teacher decides paragraphing, cohesion or organisation needs adjustment."),
+        ("Register", register_flag, "Review the flagged register evidence in relation to audience, purpose and relationship, and revise only if the teacher decides a register adjustment is needed."),
+    ]
+    for label, flag, instruction in writing_dimensions:
+        if not flag:
+            continue
+        status = flag.get("status", "NOT ASSESSED")
+        obs = flag.get("observation") or flag.get("interpretation") or f"{label} evidence was recorded."
+        summary_points.append(f"**{label} — {status}:** {obs}")
+        if status in {"REVIEW", "MISMATCH"}:
+            review_options.append((label, f"{label} — {obs}", instruction))
 
     if missing_components:
         missing=", ".join(missing_components)
@@ -2474,11 +2468,11 @@ CEFR-J is lexical reference evidence, not formal CEFR certification. Above-targe
         summary_points.append("**Requested resource features:** No requested answer-key or teacher-note component is currently marked as missing.")
 
     alignment=spec.get("curriculum_reference") or spec.get("alignment_pathway") or "Not specified"
-    context=f"**Context & alignment:** Reference context — {alignment}."
+    context=f"**Context Reference — REFERENCE ONLY:** {alignment}."
     if spec.get("textbook_reference"):
         unit=f' · {spec.get("textbook_unit")}' if spec.get("textbook_unit") else ""
-        context+=f' Textbook/coursebook — {spec.get("textbook_reference")}{unit}.'
-    context+=" This supports teacher review and is not automatic certification."
+        context+=f' Teacher-entered textbook/coursebook context — {spec.get("textbook_reference")}{unit}.'
+    context+=" Automatic curriculum/textbook alignment checking is not performed in this version."
     summary_points.append(context)
 
     st.divider()
@@ -2503,6 +2497,7 @@ CEFR-J is lexical reference evidence, not formal CEFR certification. Above-targe
             "NOT SPECIFIED" in point_upper
             or "LIMITED EVIDENCE" in point_upper
             or "NOT ASSESSED" in point_upper
+            or "REFERENCE ONLY" in point_upper
         ):
             status_class = "summary-unspecified"
         else:
